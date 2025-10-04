@@ -1,0 +1,11 @@
+{
+  "name": "rw-mockapi",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "start": "bash prism-start.sh"
+  },
+  "devDependencies": {
+    "@stoplight/prism-cli": "^5.8.2"
+  }
+}
