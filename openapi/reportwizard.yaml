@@ -1,0 +1,91 @@
+openapi: 3.0.3
+info:
+  title: RoutePeel RW Mock API
+  version: 0.1.0
+servers:
+  - url: http://localhost:4010
+paths:
+  /reports/run:
+    post:
+      summary: Kick off a report run
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reportId: { type: string }
+                parameters:
+                  type: object
+                  additionalProperties: true
+              required: [reportId]
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId: { type: string }
+                  status: { type: string, enum: [queued, running, completed, failed] }
+              examples:
+                queued:
+                  $ref: '#/components/examples/RunQueued'
+                success:
+                  $ref: '#/components/examples/RunSuccess'
+        "400":
+          description: Bad request
+  /reports/{jobId}/status:
+    get:
+      summary: Poll job status
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Current status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId: { type: string }
+                  status: { type: string, enum: [queued, running, completed, failed] }
+                  downloadUrl: { type: string, nullable: true }
+              examples:
+                queued:
+                  value: { jobId: "abc123", status: "queued", downloadUrl: null }
+                running:
+                  value: { jobId: "abc123", status: "running", downloadUrl: null }
+                completed:
+                  value: { jobId: "abc123", status: "completed", downloadUrl: "https://mock.example/downloads/abc123.csv" }
+                failed:
+                  value: { jobId: "abc123", status: "failed", downloadUrl: null }
+  /reports/{jobId}/download:
+    get:
+      summary: Download report file
+      parameters:
+        - in: path
+          name: jobId
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: CSV file
+          content:
+            text/csv:
+              schema:
+                type: string
+                example: "FundId,Investor,Amount\n1001,Acme LP,123.45\n"
+        "404":
+          description: Not found
+components:
+  examples:
+    RunQueued:
+      value: { jobId: "abc123", status: "queued" }
+    RunSuccess:
+      value: { jobId: "abc123", status: "completed" }
